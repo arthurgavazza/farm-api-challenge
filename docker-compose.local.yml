@@ -1,0 +1,25 @@
+services:
+ db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: farm-api-db
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    volumes:
+      - farm-api-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15s
+      timeout: 25s
+
+
+volumes:
+  farm-api-db:
+
+networks:
+  default:
+    driver: bridge

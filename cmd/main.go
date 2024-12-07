@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	
 	uuid.EnableRandPool()
 	
 	err := godotenv.Load(".env")

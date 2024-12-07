@@ -1,44 +1,42 @@
 package database
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"sync"
 
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/config"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
-	db   *pgxpool.Pool
+	db   *gorm.DB
 	once sync.Once
 )
 
-func NewPostgresDatabase(config *config.Config) *pgxpool.Pool {
+// NewPostgresDatabase initializes a new GORM database connection.
+func NewPostgresDatabase(config *config.Config) *gorm.DB {
 	once.Do(func() {
-		connUrl := fmt.Sprintf(
-			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		dsn := fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+			config.Database.Host,
 			config.Database.User,
 			config.Database.Password,
-			config.Database.Host,
-			config.Database.Port,
 			config.Database.Name,
+			config.Database.Port,
 		)
 
-		poolConfig, err := pgxpool.ParseConfig(connUrl)
+		var err error
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info), 
+		})
 		if err != nil {
-			log.Fatalln("Unable to parse connection url:", err)
+			log.Fatalln("Failed to connect to database:", err)
 		}
-
-		db, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
-		if err != nil {
-			log.Fatalln("Unable to create connection pool:", err)
-		}
-
-		if err := db.Ping(context.Background()); err != nil {
-			log.Fatalf("Failed to connect to database: %v", err)
-		}
+		db.AutoMigrate()
+	   
 	})
 
 	return db

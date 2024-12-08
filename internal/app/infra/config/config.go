@@ -26,9 +26,8 @@ type Config struct {
 	}
 
 	Server struct {
-		Port     string
+		Port string
 	}
-
 }
 
 func NewConfig() *Config {
@@ -48,10 +47,9 @@ func NewConfig() *Config {
 		},
 
 		Server: struct {
-			Port     string
+			Port string
 		}{
 			Port: GetEnvOrDie("SERVER_PORT"),
 		},
-
 	}
 }

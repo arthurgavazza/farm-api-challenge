@@ -14,7 +14,7 @@ import (
 
 func main() {
 	uuid.EnableRandPool()
-	
+
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Warn("Coudn't load .env file")

@@ -13,8 +13,6 @@ import (
 	"go.uber.org/fx"
 )
 
-
-
 func NewServer(
 	lifecycle fx.Lifecycle,
 	router *fiber.App,

@@ -6,23 +6,24 @@ import (
 )
 
 func ToGormFarm(domainFarm *domain.Farm) *database.Farm {
-    return &database.Farm{
-        Name:        domainFarm.Name,
-        LandArea:    domainFarm.LandArea,
-        UnitMeasure: domainFarm.UnitMeasure,
-        Address:     domainFarm.Address,
-        Productions: ToGormCropProductions(domainFarm.Productions),
-    }
+	return &database.Farm{
+		ID:          domainFarm.ID,
+		Name:        domainFarm.Name,
+		LandArea:    domainFarm.LandArea,
+		UnitMeasure: domainFarm.UnitMeasure,
+		Address:     domainFarm.Address,
+		Productions: ToGormCropProductions(domainFarm.Productions),
+	}
 }
 
 func ToGormCropProductions(domainCrops []domain.CropProduction) []database.CropProduction {
-    var crops []database.CropProduction
-    for _, crop := range domainCrops {
-        crops = append(crops, database.CropProduction{
-            CropType:    crop.CropType,
-            IsIrrigated: crop.IsIrrigated,
-            IsInsured:   crop.IsInsured,
-        })
-    }
-    return crops
+	var crops []database.CropProduction
+	for _, crop := range domainCrops {
+		crops = append(crops, database.CropProduction{
+			CropType:    crop.CropType,
+			IsIrrigated: crop.IsIrrigated,
+			IsInsured:   crop.IsInsured,
+		})
+	}
+	return crops
 }

@@ -9,23 +9,27 @@ import (
 )
 
 type FarmRepository struct {
-	db  *gorm.DB
+	db *gorm.DB
+}
+
+func NewFarmRepository(db *gorm.DB) *FarmRepository {
+	return &FarmRepository{
+		db: db,
+	}
 }
 
 func (f *FarmRepository) CreateFarm(ctx context.Context, farm *domain.Farm) (*domain.Farm, error) {
 	ormFarm := mappers.ToGormFarm(farm)
-    err := f.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-        if err := tx.Create(&ormFarm).Error; err != nil {
-            return err
-        }
-        return nil
-    })
-    if err != nil {
-        return nil, err
-    }
-	farm.ID = ormFarm.ID
+	err := f.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&ormFarm).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 	farm.CreatedAt = ormFarm.CreatedAt
 	farm.UpdatedAt = ormFarm.UpdatedAt
-    return farm, nil
+	return farm, nil
 }
-

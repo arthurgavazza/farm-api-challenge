@@ -30,13 +30,13 @@ func NewPostgresDatabase(config *config.Config) *gorm.DB {
 
 		var err error
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info), 
+			Logger: logger.Default.LogMode(logger.Info),
 		})
 		if err != nil {
 			log.Fatalln("Failed to connect to database:", err)
 		}
 		db.AutoMigrate()
-	   
+
 	})
 
 	return db

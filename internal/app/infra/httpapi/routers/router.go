@@ -21,8 +21,8 @@ func MakeRouter(
 
 	r.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"status":   "healthy",
-			"appName":  "farm-api",
+			"status":  "healthy",
+			"appName": "farm-api",
 		})
 	})
 

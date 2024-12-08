@@ -8,7 +8,7 @@ import (
 )
 
 type CropProduction struct {
-	ID          uuid.UUID      `gorm:"primaryKey;default:gen_random_uuid()"`
+	ID          uuid.UUID      `gorm:"primaryKey"`
 	FarmID      uuid.UUID      `gorm:"not null"`
 	CropType    string         `gorm:"size:50;not null"` // Enum-like values: RICE, BEANS, etc.
 	IsIrrigated bool           `gorm:"not null"`

@@ -23,6 +23,8 @@ func ToGormCropProductions(domainCrops []domain.CropProduction) []entities.CropP
 			CropType:    crop.CropType,
 			IsIrrigated: crop.IsIrrigated,
 			IsInsured:   crop.IsInsured,
+			ID:          crop.ID,
+			FarmID:      crop.FarmID,
 		})
 	}
 	return crops

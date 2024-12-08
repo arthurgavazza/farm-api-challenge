@@ -20,7 +20,6 @@ func (m *MockFarmRepository) CreateFarm(ctx context.Context, farm *domain.Farm) 
 	return args.Get(0).(*domain.Farm), args.Error(1)
 }
 
-
 func TestCreateFarmSuccess(t *testing.T) {
 	mockRepo := new(MockFarmRepository)
 	useCase := NewCreateFarmUseCase(mockRepo)
@@ -52,8 +51,6 @@ func TestCreateFarmSuccess(t *testing.T) {
 	assert.Equal(t, expectedFarm.Productions[0].ID, result.Productions[0].ID)
 	mockRepo.AssertExpectations(t)
 }
-
-
 
 func TestCreateFarmRepositoryError(t *testing.T) {
 	mockRepo := new(MockFarmRepository)

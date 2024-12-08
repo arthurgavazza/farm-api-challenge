@@ -8,7 +8,7 @@ import (
 )
 
 type Farm struct {
-	ID          uuid.UUID        `gorm:"primaryKey;default:gen_random_uuid()"`
+	ID          uuid.UUID        `gorm:"primaryKey"`
 	Name        string           `gorm:"size:255;not null"`
 	LandArea    float64          `gorm:"not null"`
 	UnitMeasure string           `gorm:"size:50;not null"`

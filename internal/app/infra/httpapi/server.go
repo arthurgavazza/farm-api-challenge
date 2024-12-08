@@ -6,7 +6,7 @@ import (
 
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/config"
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/valyala/fasthttp"
@@ -17,7 +17,7 @@ func NewServer(
 	lifecycle fx.Lifecycle,
 	router *fiber.App,
 	config *config.Config,
-	_ *pgxpool.Pool,
+	_ *gorm.DB,
 ) *fasthttp.Server {
 	lifecycle.Append(fx.Hook{
 		OnStart: func(context.Context) error {

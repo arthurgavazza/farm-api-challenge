@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/config"
+	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/database/entities"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -35,7 +36,7 @@ func NewPostgresDatabase(config *config.Config) *gorm.DB {
 		if err != nil {
 			log.Fatalln("Failed to connect to database:", err)
 		}
-		db.AutoMigrate()
+		db.AutoMigrate(&entities.Farm{}, &entities.CropProduction{})
 
 	})
 

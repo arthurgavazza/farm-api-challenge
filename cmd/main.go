@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain/usecases"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/config"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/database"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/httpapi"
+	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/httpapi/controllers"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/httpapi/routers"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
@@ -19,9 +21,10 @@ func main() {
 	if err != nil {
 		log.Warn("Coudn't load .env file")
 	}
-	log.Warn("Coudn't load .env file")
 	app := fx.New(
 		config.Module,
+		controllers.Module,
+		usecases.Module,
 		httpapi.Module,
 		routers.Module,
 		database.Module,

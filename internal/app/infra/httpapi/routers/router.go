@@ -10,6 +10,7 @@ type Router interface {
 }
 
 func MakeRouter(
+	farmRouter *FarmRouter,
 	config *config.Config,
 ) *fiber.App {
 	cfg := fiber.Config{
@@ -25,6 +26,8 @@ func MakeRouter(
 			"appName": "farm-api",
 		})
 	})
+
+	farmRouter.Load(r)
 
 	return r
 }

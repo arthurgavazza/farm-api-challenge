@@ -8,13 +8,13 @@ import (
 )
 
 type Farm struct {
-	ID          uuid.UUID        `gorm:"primaryKey" json:"id"`
-	Name        string           `gorm:"size:255;not null" json:"name"`
-	LandArea    float64          `gorm:"not null" json:"land_area"`
-	UnitMeasure string           `gorm:"size:50;not null" json:"unit_measure"`
-	Address     string           `gorm:"size:255;not null" json:"address"`
-	Productions []CropProduction `gorm:"foreignKey:FarmID;constraint:OnDelete:CASCADE;" json:"productions"`
-	CreatedAt   time.Time        `json:"created_at"`
-	UpdatedAt   time.Time        `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt   `gorm:"index" json:"deleted_at,omitempty"`
+	ID          uuid.UUID        `gorm:"primaryKey;default:gen_random_uuid()"`
+	Name        string           `gorm:"size:255;not null"`
+	LandArea    float64          `gorm:"not null"`
+	UnitMeasure string           `gorm:"size:50;not null"`
+	Address     string           `gorm:"size:255;not null"`
+	Productions []CropProduction `gorm:"foreignKey:FarmID;constraint:OnDelete:CASCADE;"`
+	CreatedAt   time.Time        `gorm:"not null"`
+	UpdatedAt   time.Time        `gorm:"not null"`
+	DeletedAt   gorm.DeletedAt   `gorm:"index"`
 }

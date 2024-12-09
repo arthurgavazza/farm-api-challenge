@@ -12,21 +12,21 @@ import (
 	"github.com/tj/assert"
 )
 
-type MockFarmRepository struct {
+type mockFarmRepository struct {
 	mock.Mock
 }
 
-func (m *MockFarmRepository) ListFarms(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
+func (m *mockFarmRepository) ListFarms(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
 	panic("unimplemented")
 }
 
-func (m *MockFarmRepository) CreateFarm(ctx context.Context, farm *domain.Farm) (*domain.Farm, error) {
+func (m *mockFarmRepository) CreateFarm(ctx context.Context, farm *domain.Farm) (*domain.Farm, error) {
 	args := m.Called(ctx, farm)
 	return args.Get(0).(*domain.Farm), args.Error(1)
 }
 
 func TestCreateFarmSuccess(t *testing.T) {
-	mockRepo := new(MockFarmRepository)
+	mockRepo := new(mockFarmRepository)
 	useCase := NewCreateFarmUseCase(mockRepo)
 
 	ctx := context.Background()
@@ -35,30 +35,30 @@ func TestCreateFarmSuccess(t *testing.T) {
 		LandArea:    100.5,
 		UnitMeasure: "acres",
 		Address:     "123 Farm Lane",
-		Productions: []domain.CropProduction{
+		CropProductions: []domain.CropProduction{
 			{CropType: "RICE"},
 		},
 	}
 
 	expectedFarm := farm
 	expectedFarm.ID = uuid.New()
-	expectedFarm.Productions[0].ID = uuid.New()
-	expectedFarm.Productions[0].FarmID = expectedFarm.ID
+	expectedFarm.CropProductions[0].ID = uuid.New()
+	expectedFarm.CropProductions[0].FarmID = expectedFarm.ID
 
 	mockRepo.On("CreateFarm", ctx, mock.MatchedBy(func(f *domain.Farm) bool {
-		return f.Name == farm.Name && f.LandArea == farm.LandArea && len(f.Productions) == 1
+		return f.Name == farm.Name && f.LandArea == farm.LandArea && len(f.CropProductions) == 1
 	})).Return(&expectedFarm, nil)
 
 	result, err := useCase.Execute(ctx, farm)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedFarm.ID, result.ID)
-	assert.Equal(t, expectedFarm.Productions[0].ID, result.Productions[0].ID)
+	assert.Equal(t, expectedFarm.CropProductions[0].ID, result.CropProductions[0].ID)
 	mockRepo.AssertExpectations(t)
 }
 
 func TestCreateFarmRepositoryError(t *testing.T) {
-	mockRepo := new(MockFarmRepository)
+	mockRepo := new(mockFarmRepository)
 	useCase := NewCreateFarmUseCase(mockRepo)
 
 	ctx := context.Background()
@@ -67,7 +67,7 @@ func TestCreateFarmRepositoryError(t *testing.T) {
 		LandArea:    100.5,
 		UnitMeasure: "acres",
 		Address:     "123 Farm Lane",
-		Productions: []domain.CropProduction{
+		CropProductions: []domain.CropProduction{
 			{CropType: "RICE"},
 		},
 	}

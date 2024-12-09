@@ -11,11 +11,11 @@ type CropProductionDTO struct {
 }
 
 type CreateFarmDTO struct {
-	Name        string              `json:"name" validate:"required"`
-	LandArea    float64             `json:"land_area" validate:"required,gt=0"`
-	UnitMeasure string              `json:"unit_measure" validate:"required"`
-	Address     string              `json:"address" validate:"required"`
-	Productions []CropProductionDTO `json:"productions" validate:"dive"`
+	Name            string              `json:"name" validate:"required"`
+	LandArea        float64             `json:"land_area" validate:"required,gt=0"`
+	UnitMeasure     string              `json:"unit_measure" validate:"required"`
+	Address         string              `json:"address" validate:"required"`
+	CropProductions []CropProductionDTO `json:"productions" validate:"dive"`
 }
 
 func (dto *CreateFarmDTO) Validate() *string {

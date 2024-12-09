@@ -26,7 +26,7 @@ func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 			JSON(fiber.Map{"error": validationErrors})
 	}
 	var productions []domain.CropProduction
-	for _, production := range dto.Productions {
+	for _, production := range dto.CropProductions {
 		domainCropProduction := domain.CropProduction{
 			CropType:    production.CropType,
 			IsInsured:   production.IsInsured,
@@ -35,11 +35,11 @@ func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 		productions = append(productions, domainCropProduction)
 	}
 	farm, err := fc.createFarmUsecase.Execute(c.Context(), domain.Farm{
-		Name:        dto.Name,
-		LandArea:    dto.LandArea,
-		UnitMeasure: dto.UnitMeasure,
-		Address:     dto.Address,
-		Productions: productions,
+		Name:            dto.Name,
+		LandArea:        dto.LandArea,
+		UnitMeasure:     dto.UnitMeasure,
+		Address:         dto.Address,
+		CropProductions: productions,
 	})
 	if err != nil {
 		return c.

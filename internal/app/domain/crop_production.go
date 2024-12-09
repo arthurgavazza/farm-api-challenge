@@ -48,7 +48,6 @@ func NewCropProduction(
 	isIrrigated bool,
 	isInsured bool,
 ) (*CropProduction, error) {
-	// Validate inputs
 	if farmId == uuid.Nil {
 		return nil, ErrInvalidFarmID
 	}

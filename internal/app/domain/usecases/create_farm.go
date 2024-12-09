@@ -18,9 +18,9 @@ func (uc *CreateFarm) Execute(ctx context.Context, farm domain.Farm) (*domain.Fa
 	farmID := uuid.New()
 	farm.ID = farmID
 
-	for i := range farm.Productions {
-		farm.Productions[i].ID = uuid.New()
-		farm.Productions[i].FarmID = farmID
+	for i := range farm.CropProductions {
+		farm.CropProductions[i].ID = uuid.New()
+		farm.CropProductions[i].FarmID = farmID
 	}
 	return uc.repository.CreateFarm(ctx, &farm)
 }

@@ -7,12 +7,12 @@ import (
 
 func ToGormFarm(domainFarm *domain.Farm) *entities.Farm {
 	return &entities.Farm{
-		ID:          domainFarm.ID,
-		Name:        domainFarm.Name,
-		LandArea:    domainFarm.LandArea,
-		UnitMeasure: domainFarm.UnitMeasure,
-		Address:     domainFarm.Address,
-		Productions: ToGormCropProductions(domainFarm.Productions),
+		ID:              domainFarm.ID,
+		Name:            domainFarm.Name,
+		LandArea:        domainFarm.LandArea,
+		UnitMeasure:     domainFarm.UnitMeasure,
+		Address:         domainFarm.Address,
+		CropProductions: ToGormCropProductions(domainFarm.CropProductions),
 	}
 }
 
@@ -32,12 +32,12 @@ func ToGormCropProductions(domainCrops []domain.CropProduction) []entities.CropP
 
 func ToDomainFarm(ormFarm *entities.Farm) *domain.Farm {
 	return &domain.Farm{
-		ID:          ormFarm.ID,
-		Name:        ormFarm.Name,
-		LandArea:    ormFarm.LandArea,
-		UnitMeasure: ormFarm.UnitMeasure,
-		Address:     ormFarm.Address,
-		Productions: ToDomainCropProductions(ormFarm.Productions),
+		ID:              ormFarm.ID,
+		Name:            ormFarm.Name,
+		LandArea:        ormFarm.LandArea,
+		UnitMeasure:     ormFarm.UnitMeasure,
+		Address:         ormFarm.Address,
+		CropProductions: ToDomainCropProductions(ormFarm.CropProductions),
 	}
 }
 

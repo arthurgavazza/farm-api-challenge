@@ -8,15 +8,15 @@ import (
 )
 
 type Farm struct {
-	ID          uuid.UUID        `json:"id"`
-	Name        string           `json:"name"`
-	LandArea    float64          `json:"land_area"`
-	UnitMeasure string           `json:"unit_measure"`
-	Address     string           `json:"address"`
-	CreatedAt   time.Time        `json:"created_at"`
-	UpdatedAt   time.Time        `json:"updated_at"`
-	DeletedAt   *time.Time       `json:"deleted_at,omitempty"` // nullable field, use *time.Time
-	Productions []CropProduction `json:"productions"`
+	ID              uuid.UUID        `json:"id"`
+	Name            string           `json:"name"`
+	LandArea        float64          `json:"land_area"`
+	UnitMeasure     string           `json:"unit_measure"`
+	Address         string           `json:"address"`
+	CreatedAt       time.Time        `json:"created_at"`
+	UpdatedAt       time.Time        `json:"updated_at"`
+	DeletedAt       *time.Time       `json:"deleted_at,omitempty"` // nullable field, use *time.Time
+	CropProductions []CropProduction `json:"crop_productions"`
 }
 
 type FarmSearchParameters struct {
@@ -47,14 +47,14 @@ func NewFarm(
 	}
 
 	farm := &Farm{
-		ID:          uuid.New(),
-		Name:        name,
-		LandArea:    landArea,
-		UnitMeasure: unitMeasure,
-		Address:     address,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-		Productions: productions,
+		ID:              uuid.New(),
+		Name:            name,
+		LandArea:        landArea,
+		UnitMeasure:     unitMeasure,
+		Address:         address,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+		CropProductions: productions,
 	}
 
 	return farm, nil

@@ -89,7 +89,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerCreateFarm() {
 			},
 			expectedStatusCode: fiber.StatusInternalServerError,
 			mockResponse:       nil,
-			mockError:          assert.AnError, 
+			mockError:          assert.AnError,
 			mockRequired:       true,
 		},
 	}
@@ -102,7 +102,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerCreateFarm() {
 					Return(tt.mockResponse, tt.mockError)
 			}
 
-			controller := NewFarmController(mockUseCase)
+			controller := NewFarmController(mockUseCase, nil)
 			app := fiber.New(fiber.Config{
 				AppName:       "farm-api-test by @arthurgavazza",
 				CaseSensitive: true,

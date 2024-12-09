@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain"
+	"github.com/arthurgavazza/farm-api-challenge/internal/app/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/tj/assert"
@@ -13,6 +14,10 @@ import (
 
 type MockFarmRepository struct {
 	mock.Mock
+}
+
+func (m *MockFarmRepository) ListFarms(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
+	panic("unimplemented")
 }
 
 func (m *MockFarmRepository) CreateFarm(ctx context.Context, farm *domain.Farm) (*domain.Farm, error) {

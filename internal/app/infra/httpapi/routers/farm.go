@@ -13,6 +13,7 @@ type FarmRouter struct {
 func (f *FarmRouter) Load(r *fiber.App) {
 	log.Info("Loading farm routes")
 	r.Post("/farms", f.controller.CreateFarm)
+	r.Get("/farms", f.controller.ListFarms)
 }
 
 func NewFarmRouter(

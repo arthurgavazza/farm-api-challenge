@@ -20,10 +20,10 @@ type Farm struct {
 }
 
 type FarmSearchParameters struct {
-	CropType string  `json:"crop_type"`
-	LandArea float64 `json:"land_area"`
-	Page     int     `json:"page"`
-	PerPage  int     `json:"per_page"`
+	CropType *string  `json:"crop_type"`
+	LandArea *float64 `json:"land_area"`
+	Page     int      `json:"page"`
+	PerPage  int      `json:"per_page"`
 }
 
 func NewFarm(

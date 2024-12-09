@@ -29,3 +29,28 @@ func ToGormCropProductions(domainCrops []domain.CropProduction) []entities.CropP
 	}
 	return crops
 }
+
+func ToDomainFarm(ormFarm *entities.Farm) *domain.Farm {
+	return &domain.Farm{
+		ID:          ormFarm.ID,
+		Name:        ormFarm.Name,
+		LandArea:    ormFarm.LandArea,
+		UnitMeasure: ormFarm.UnitMeasure,
+		Address:     ormFarm.Address,
+		Productions: ToDomainCropProductions(ormFarm.Productions),
+	}
+}
+
+func ToDomainCropProductions(domainCrops []entities.CropProduction) []domain.CropProduction {
+	var crops []domain.CropProduction
+	for _, crop := range domainCrops {
+		crops = append(crops, domain.CropProduction{
+			CropType:    crop.CropType,
+			IsIrrigated: crop.IsIrrigated,
+			IsInsured:   crop.IsInsured,
+			ID:          crop.ID,
+			FarmID:      crop.FarmID,
+		})
+	}
+	return crops
+}

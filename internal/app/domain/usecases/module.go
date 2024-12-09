@@ -6,4 +6,8 @@ import (
 
 var Module = fx.Provide(
 	NewCreateFarmUseCase,
+	fx.Annotate(
+		NewCreateFarmUseCase,
+		fx.As(new(CreateFarmUseCase)),
+	),
 )

@@ -8,16 +8,13 @@ import (
 )
 
 type FarmController struct {
-	createFarmUsecase *usecases.CreateFarm
+	createFarmUsecase usecases.CreateFarmUseCase
 }
 
 func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 	var dto dto.CreateFarmDTO
-
 	if err := c.BodyParser(&dto); err != nil {
-		return c.
-			Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"error": "bad request"})
+		return err
 	}
 	validationErrors := dto.Validate()
 	if validationErrors != nil {
@@ -51,7 +48,7 @@ func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 }
 
 func NewFarmController(
-	createFarmUsecase *usecases.CreateFarm,
+	createFarmUsecase usecases.CreateFarmUseCase,
 ) *FarmController {
 	return &FarmController{
 		createFarmUsecase: createFarmUsecase,

@@ -7,6 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
+type CreateFarmUseCase interface {
+	Execute(ctx context.Context, farm domain.Farm) (*domain.Farm, error)
+}
 type CreateFarm struct {
 	repository domain.FarmRepository
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/database/entities"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/database/mappers"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/models"
+	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -115,7 +116,7 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 		query = query.Where("farms.land_area <= ?", *searchParameters.MaximumLandArea)
 	}
 
-	if err := query.Count(&totalCount).Error; err != nil {
+	if err := query.Distinct("farms.id").Count(&totalCount).Error; err != nil {
 		return nil, err
 	}
 
@@ -143,4 +144,20 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 	}
 
 	return response, nil
+}
+
+func (f *FarmRepository) DeleteFarm(ctx context.Context, farmId string) error {
+	tx := f.db.Delete(&entities.Farm{}, "id = ?", farmId)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	if tx.RowsAffected == 0 {
+		return &shared.NotFoundError{
+			Resource: "Farm",
+			ID:       farmId,
+		}
+	}
+
+	return nil
 }

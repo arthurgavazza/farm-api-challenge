@@ -9,6 +9,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain"
+	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
 	"github.com/arthurgavazza/farm-api-challenge/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -109,7 +110,7 @@ func (rs *FarmRepositoryTestSuite) TestCreateFarm() {
 }
 
 func (rs *FarmRepositoryTestSuite) TestListFarmsEmptyResults() {
-	rs.mock.ExpectQuery(`SELECT count(.*) FROM "farms"`).
+	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
 
 	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT`)).
@@ -133,7 +134,7 @@ func (rs *FarmRepositoryTestSuite) TestListFarmsEmptyResults() {
 }
 
 func (rs *FarmRepositoryTestSuite) TestListFarmsWithMultipleCropProductions() {
-	rs.mock.ExpectQuery(`SELECT count(.*) FROM "farms"`).
+	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
 
 	rows := sqlmock.NewRows([]string{
@@ -164,7 +165,7 @@ func (rs *FarmRepositoryTestSuite) TestListFarmsWithMultipleCropProductions() {
 
 func (rs *FarmRepositoryTestSuite) TestListFarmsWithCropTypeFilter() {
 
-	rs.mock.ExpectQuery(`SELECT count(.*) FROM "farms"`).
+	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
 
 	rows := sqlmock.NewRows([]string{
@@ -192,6 +193,27 @@ func (rs *FarmRepositoryTestSuite) TestListFarmsWithCropTypeFilter() {
 	assert.NotNil(rs.T(), response)
 	assert.Equal(rs.T(), 1, len(response.Items)) // One farm
 	assert.Equal(rs.T(), rs.farm.ID, response.Items[0].ID)
+}
+
+func (rs *FarmRepositoryTestSuite) TestSuccessfulFarmDeletion() {
+	rs.mock.ExpectBegin()
+	rs.mock.ExpectExec(regexp.QuoteMeta(`UPDATE`)).WithArgs(testutils.AnyTime{}, rs.farm.ID.String()).WillReturnResult(sqlmock.NewResult(1, 1))
+	rs.mock.ExpectCommit()
+	err := rs.repo.DeleteFarm(context.Background(), rs.farm.ID.String())
+	assert.NoError(rs.T(), err)
+}
+
+func (rs *FarmRepositoryTestSuite) TestDeleteNonExistingFarm() {
+	invalidId := "invalid_id"
+	rs.mock.ExpectBegin()
+	rs.mock.ExpectExec(regexp.QuoteMeta(`UPDATE`)).WithArgs(testutils.AnyTime{}, invalidId).WillReturnResult(sqlmock.NewResult(0, 0))
+	rs.mock.ExpectCommit()
+	err := rs.repo.DeleteFarm(context.Background(), invalidId)
+	expectedErr := shared.NotFoundError{
+		Resource: "Farm",
+		ID:       invalidId,
+	}
+	assert.EqualError(rs.T(), err, expectedErr.Error())
 }
 
 func TestSuite(t *testing.T) {

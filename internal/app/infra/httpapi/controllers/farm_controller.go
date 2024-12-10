@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -8,12 +9,14 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain/usecases"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/dto"
+	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
 	"github.com/gofiber/fiber/v2"
 )
 
 type FarmController struct {
 	createFarmUsecase usecases.CreateFarmUseCase
 	listFarmsUseCase  usecases.ListFarmsUseCase
+	deleteFarmUseCase usecases.DeleteFarmUseCase
 }
 
 func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
@@ -96,12 +99,37 @@ func (fc *FarmController) ListFarms(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(result)
 }
 
+func (fc *FarmController) DeleteFarm(c *fiber.Ctx) error {
+	farmId := c.Params("id")
+	if farmId == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "The 'id' parameter is required and must not be empty. Please provide a valid farm ID in the request URL.",
+		})
+	}
+
+	if err := fc.deleteFarmUseCase.Execute(c.Context(), farmId); err != nil {
+		var notFoundError *shared.NotFoundError
+		if errors.As(err, &notFoundError) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Sprintf("Failed to delete farm: %s", err.Error()),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
+
 func NewFarmController(
 	createFarmUsecase usecases.CreateFarmUseCase,
 	listFarmsUsecase usecases.ListFarmsUseCase,
+	deleteFarmUseCase usecases.DeleteFarmUseCase,
 ) *FarmController {
 	return &FarmController{
 		createFarmUsecase: createFarmUsecase,
 		listFarmsUseCase:  listFarmsUsecase,
+		deleteFarmUseCase: deleteFarmUseCase,
 	}
 }

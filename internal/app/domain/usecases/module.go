@@ -15,4 +15,8 @@ var Module = fx.Provide(
 		NewListFarmsUseCase,
 		fx.As(new(ListFarmsUseCase)),
 	),
+	fx.Annotate(
+		NewDeleteFarmUseCase,
+		fx.As(new(DeleteFarmUseCase)),
+	),
 )

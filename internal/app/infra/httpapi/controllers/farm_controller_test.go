@@ -12,6 +12,7 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/dto"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/models"
+	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
 	"github.com/arthurgavazza/farm-api-challenge/testutils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -36,6 +37,15 @@ type MockListFarmsUseCase struct {
 func (m *MockListFarmsUseCase) Execute(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
 	args := m.Called(ctx, searchParameters)
 	return args.Get(0).(*models.PaginatedResponse[*domain.Farm]), args.Error(1)
+}
+
+type MockDeleteFarmUseCase struct {
+	mock.Mock
+}
+
+func (m *MockDeleteFarmUseCase) Execute(ctx context.Context, farmId string) error {
+	args := m.Called(ctx, farmId)
+	return args.Error(0)
 }
 
 type FarmControllerTestSuite struct {
@@ -115,7 +125,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerCreateFarm() {
 					Return(tt.mockResponse, tt.mockError)
 			}
 
-			controller := NewFarmController(mockUseCase, nil)
+			controller := NewFarmController(mockUseCase, nil, nil)
 			app := fiber.New(fiber.Config{
 				AppName:       "farm-api-test by @arthurgavazza",
 				CaseSensitive: true,
@@ -162,7 +172,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 	}{
 		{
 			name:               "Successful farms retrieval with valid query string",
-			expectedStatusCode: 200,
+			expectedStatusCode: fiber.StatusOK,
 			mockResponse: &models.PaginatedResponse[*domain.Farm]{
 				TotalCount:  5,
 				PerPage:     10,
@@ -175,7 +185,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 		},
 		{
 			name:               "Successful farms retrieval with empty query string",
-			expectedStatusCode: 200,
+			expectedStatusCode: fiber.StatusOK,
 			mockResponse: &models.PaginatedResponse[*domain.Farm]{
 				TotalCount:  5,
 				PerPage:     10,
@@ -188,7 +198,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 		},
 		{
 			name:               "Invalid query parameters request",
-			expectedStatusCode: 400,
+			expectedStatusCode: fiber.StatusBadRequest,
 			mockResponse:       nil,
 			mockError:          nil,
 			mockRequired:       false,
@@ -196,7 +206,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 		},
 		{
 			name:               "Unknown exception in use case layer",
-			expectedStatusCode: 500,
+			expectedStatusCode: fiber.StatusInternalServerError,
 			mockResponse:       nil,
 			mockError:          errors.New("Unknown error"),
 			mockRequired:       true,
@@ -213,7 +223,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 					Return(tt.mockResponse, tt.mockError)
 			}
 
-			controller := NewFarmController(nil, mockUseCase)
+			controller := NewFarmController(nil, mockUseCase, nil)
 			app := fiber.New(fiber.Config{
 				AppName:       "farm-api-test by @arthurgavazza",
 				CaseSensitive: true,
@@ -239,6 +249,70 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 				assert.Equal(cs.T(), tt.mockResponse.TotalCount, response.TotalCount)
 				assert.Equal(cs.T(), tt.mockResponse.CurrentPage, response.CurrentPage)
 			} else if tt.expectedStatusCode == fiber.StatusBadRequest || tt.expectedStatusCode == fiber.StatusInternalServerError {
+				var response map[string]interface{}
+				err = json.NewDecoder(resp.Body).Decode(&response)
+				assert.NoError(cs.T(), err)
+				assert.NotNil(cs.T(), response["error"])
+			}
+			if tt.mockRequired {
+				mockUseCase.AssertExpectations(cs.T())
+			}
+		})
+	}
+}
+
+func (cs *FarmControllerTestSuite) TestFarmControllerDeleteFarm() {
+	farmId := uuid.New().String()
+	notFoundErr := &shared.NotFoundError{
+		Resource: "Farm",
+		ID:       farmId,
+	}
+	tests := []struct {
+		name               string
+		expectedStatusCode int
+		mockError          error
+		mockRequired       bool
+		farmId             string
+	}{
+		{
+			name:               "Successful farm deletion",
+			expectedStatusCode: fiber.StatusNoContent,
+			mockError:          nil,
+			mockRequired:       true,
+			farmId:             farmId,
+		},
+		{
+			name:               "Invalid request -  farm not found",
+			expectedStatusCode: fiber.StatusNotFound,
+			mockError:          notFoundErr,
+			mockRequired:       true,
+			farmId:             farmId,
+		},
+	}
+
+	for _, tt := range tests {
+		cs.Run(tt.name, func() {
+			var mockUseCase *MockDeleteFarmUseCase
+			if tt.mockRequired {
+				mockUseCase = new(MockDeleteFarmUseCase)
+				mockUseCase.On("Execute", mock.Anything, mock.AnythingOfType("string")).
+					Return(tt.mockError)
+			}
+
+			controller := NewFarmController(nil, nil, mockUseCase)
+			app := fiber.New(fiber.Config{
+				AppName:       "farm-api-test by @arthurgavazza",
+				CaseSensitive: true,
+			})
+			app.Delete("/farms/:id", controller.DeleteFarm)
+			route := fmt.Sprintf("/farms/%s", tt.farmId)
+			req, err := http.NewRequest("DELETE", route, nil)
+			assert.NoError(cs.T(), err)
+			resp, err := app.Test(req)
+			assert.NoError(cs.T(), err)
+
+			assert.Equal(cs.T(), tt.expectedStatusCode, resp.StatusCode)
+			if tt.expectedStatusCode == fiber.StatusBadRequest || tt.expectedStatusCode == fiber.StatusInternalServerError {
 				var response map[string]interface{}
 				err = json.NewDecoder(resp.Body).Decode(&response)
 				assert.NoError(cs.T(), err)

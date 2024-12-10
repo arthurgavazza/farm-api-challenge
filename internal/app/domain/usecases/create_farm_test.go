@@ -16,6 +16,10 @@ type mockFarmRepository struct {
 	mock.Mock
 }
 
+func (m *mockFarmRepository) DeleteFarm(ctx context.Context, farmId string) error {
+	panic("unimplemented")
+}
+
 func (m *mockFarmRepository) ListFarms(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
 	panic("unimplemented")
 }

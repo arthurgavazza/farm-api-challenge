@@ -1,0 +1,40 @@
+services:
+ db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: farm-api-db
+    ports:
+      - "5432:5432"
+    expose:
+      - "5432"
+    volumes:
+      - farm-api-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 15s
+      timeout: 25s
+api:
+    image: arthurgavazza/farm-api-challenge
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8080"
+    environment: 
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: farm-api-db
+      SERVER_PORT: 8080
+
+
+
+volumes:
+  farm-api-db:
+
+networks:
+  default:
+    driver: bridge

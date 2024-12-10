@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,15 +14,16 @@ type Farm struct {
 	Address         string           `json:"address"`
 	CreatedAt       time.Time        `json:"created_at"`
 	UpdatedAt       time.Time        `json:"updated_at"`
-	DeletedAt       *time.Time       `json:"deleted_at,omitempty"` // nullable field, use *time.Time
+	DeletedAt       *time.Time       `json:"deleted_at,omitempty"`
 	CropProductions []CropProduction `json:"crop_productions"`
 }
 
 type FarmSearchParameters struct {
-	CropType *string  `json:"crop_type"`
-	LandArea *float64 `json:"land_area"`
-	Page     int      `json:"page"`
-	PerPage  int      `json:"per_page"`
+	CropType        *string  `json:"crop_type"`
+	MinimumLandArea *float64 `json:"minimum_land_area"`
+	MaximumLandArea *float64 `json:"maximum_land_area"`
+	Page            int      `json:"page"`
+	PerPage         int      `json:"per_page"`
 }
 
 func NewFarm(
@@ -33,19 +33,6 @@ func NewFarm(
 	address string,
 	productions []CropProduction,
 ) (*Farm, error) {
-	if name == "" {
-		return nil, errors.New("farm name cannot be empty")
-	}
-	if landArea <= 0 {
-		return nil, errors.New("land area must be greater than zero")
-	}
-	if unitMeasure == "" {
-		return nil, errors.New("unit measure cannot be empty")
-	}
-	if address == "" {
-		return nil, errors.New("address cannot be empty")
-	}
-
 	farm := &Farm{
 		ID:              uuid.New(),
 		Name:            name,

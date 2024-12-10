@@ -187,6 +187,14 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 			queryString:  "",
 		},
 		{
+			name:               "Invalid query parameters request",
+			expectedStatusCode: 400,
+			mockResponse:       nil,
+			mockError:          nil,
+			mockRequired:       false,
+			queryString:        "?maximum_land_area=test",
+		},
+		{
 			name:               "Unknown exception in use case layer",
 			expectedStatusCode: 500,
 			mockResponse:       nil,

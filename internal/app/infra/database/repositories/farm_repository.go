@@ -106,8 +106,13 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 	if searchParameters.CropType != nil {
 		query = query.Where("crop_productions.crop_type = ?", *searchParameters.CropType)
 	}
-	if searchParameters.LandArea != nil {
-		query = query.Where("farms.land_area = ?", *searchParameters.LandArea)
+
+	if searchParameters.MinimumLandArea != nil && searchParameters.MaximumLandArea != nil {
+		query = query.Where("farms.land_area BETWEEN ? AND ?", *searchParameters.MinimumLandArea, *searchParameters.MaximumLandArea)
+	} else if searchParameters.MinimumLandArea != nil {
+		query = query.Where("farms.land_area >= ?", *searchParameters.MinimumLandArea)
+	} else if searchParameters.MaximumLandArea != nil {
+		query = query.Where("farms.land_area <= ?", *searchParameters.MaximumLandArea)
 	}
 
 	if err := query.Count(&totalCount).Error; err != nil {

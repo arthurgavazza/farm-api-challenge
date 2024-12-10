@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain/usecases"
@@ -19,11 +21,17 @@ func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 	if err := c.BodyParser(&dto); err != nil {
 		return err
 	}
-	validationErrors := dto.Validate()
-	if validationErrors != nil {
-		return c.
-			Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"error": validationErrors})
+	if errs := dto.Validate(); len(errs) > 0 && errs[0].Error {
+		errMsgs := make([]string, 0)
+		for _, err := range errs {
+			errMsgs = append(errMsgs, fmt.Sprintf(
+				"[%s]: '%v' | Needs to implement '%s'",
+				err.FailedField,
+				err.Value,
+				err.Tag,
+			))
+		}
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": strings.Join(errMsgs, " and ")})
 	}
 	var productions []domain.CropProduction
 	for _, production := range dto.CropProductions {
@@ -53,30 +61,32 @@ func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 func (fc *FarmController) ListFarms(c *fiber.Ctx) error {
 	queries := c.Queries()
 	searchParameters := &domain.FarmSearchParameters{
-		Page:    0,
-		PerPage: 10,
+		Page:    c.QueryInt("page", 1),
+		PerPage: c.QueryInt("per_page", 10),
 	}
 	if cropType, exists := queries["crop_type"]; exists {
 		searchParameters.CropType = &cropType
 	}
-	if landAreaStr, exists := queries["land_area"]; exists {
-		landArea, err := strconv.ParseFloat(landAreaStr, 64)
+
+	if minLandAreaStr, exists := queries["minimum_land_area"]; exists {
+		landArea, err := strconv.ParseFloat(minLandAreaStr, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": `Query parameter "land_area" must be a valid floating-point number`,
+				"error": `Query parameter "minimum_land_area" must be a valid floating-point number`,
 			})
 		}
-		searchParameters.LandArea = &landArea
+		searchParameters.MinimumLandArea = &landArea
 	}
-	if pageStr, exists := queries["page"]; exists {
-		page, err := strconv.Atoi(pageStr)
+	if maximumLandAreaStr, exists := queries["maximum_land_area"]; exists {
+		landArea, err := strconv.ParseFloat(maximumLandAreaStr, 64)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": `Query parameter "page" must be a valid integer`,
+				"error": `Query parameter "maximum_land_area" must be a valid floating-point number`,
 			})
 		}
-		searchParameters.Page = page
+		searchParameters.MaximumLandArea = &landArea
 	}
+
 	result, err := fc.listFarmsUseCase.Execute(c.Context(), searchParameters)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/go-playground/validator/v10"
+	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/validation"
 )
 
 type CropProductionDTO struct {
@@ -15,17 +15,9 @@ type CreateFarmDTO struct {
 	LandArea        float64             `json:"land_area" validate:"required,gt=0"`
 	UnitMeasure     string              `json:"unit_measure" validate:"required"`
 	Address         string              `json:"address" validate:"required"`
-	CropProductions []CropProductionDTO `json:"productions" validate:"dive"`
+	CropProductions []CropProductionDTO `json:"crop_productions" validate:"dive"`
 }
 
-func (dto *CreateFarmDTO) Validate() *string {
-	validate := validator.New()
-	err := validate.Struct(dto)
-
-	if err != nil {
-		errorMessage := err.(validator.ValidationErrors).Error()
-		return &errorMessage
-
-	}
-	return nil
+func (dto *CreateFarmDTO) Validate() []shared.ErrorResponse {
+	return shared.ValidateStruct(dto)
 }

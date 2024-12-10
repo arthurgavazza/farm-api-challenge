@@ -1,5 +1,4 @@
 name: Build and Push Docker Image
-environment: production
 on:
   push:
     branches:
@@ -9,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4

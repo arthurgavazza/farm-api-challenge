@@ -19,6 +19,7 @@ This repository contains a solution to the backend developer challenge. The proj
 - **Fx**: A dependency injection framework to manage services and their lifecycle.
 - **Gorm**: ORM for interacting with the PostgreSQL database.
 - **go-playground/validator/v10**: A popular validation library for Go that simplifies struct validation with customizable tags and built-in rules.
+- **Zap**: A popular logging library.
 
 ### **Database**: PostgreSQL
 - PostgreSQL is used for data storage and management of farm and crop records.
@@ -85,6 +86,8 @@ This repository contains a solution to the backend developer challenge. The proj
 │       │       │   ├── farm_controller.go
 │       │       │   ├── farm_controller_test.go
 │       │       │   └── module.go
+│       │       ├── middlewares
+│       │       │   └── request_logging_middleware.go
 │       │       ├── module.go
 │       │       ├── routers
 │       │       │   ├── farm.go
@@ -96,6 +99,9 @@ This repository contains a solution to the backend developer challenge. The proj
 │       └── shared
 │           ├── errors
 │           │   └── errors.go
+│           ├── logger
+│           │   ├── logger.go
+│           │   └── module.go
 │           ├── utils
 │           └── validation
 │               └── validation.go
@@ -148,6 +154,7 @@ Includes shared utilities and components used across the application:
 - **`errors`**: Custom error types and error-handling logic.  
 - **`utils`**: General-purpose utility functions.  
 - **`validation`**: Input validation logic for various application components.
+- **`logger`**: production ready logger implementation built on top of Zap.
 
 ### `testutils`
 Provides helper functions, fake objects, and custom matchers to facilitate writing and organizing tests across the application.

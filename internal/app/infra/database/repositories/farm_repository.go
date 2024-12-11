@@ -9,17 +9,20 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/database/mappers"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/models"
 	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
+	logger "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/logger"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type FarmRepository struct {
-	db *gorm.DB
+	db     *gorm.DB
+	logger *logger.Logger
 }
 
-func NewFarmRepository(db *gorm.DB) *FarmRepository {
+func NewFarmRepository(db *gorm.DB, logger *logger.Logger) *FarmRepository {
 	return &FarmRepository{
-		db: db,
+		db:     db,
+		logger: logger,
 	}
 }
 
@@ -56,7 +59,8 @@ func (f *FarmRepository) CreateFarm(ctx context.Context, farm *domain.Farm) (*do
 	return farm, nil
 }
 
-func (f *FarmRepository) parseRawFarmResults(rawResults []farmWithCropProduction) []*domain.Farm {
+func (f *FarmRepository) parseRawFarmResults(ctx context.Context, rawResults []farmWithCropProduction) []*domain.Farm {
+	f.logger.Info(ctx, "Parsing raw results from the list farms method")
 	farmsMap := make(map[uuid.UUID]*domain.Farm)
 
 	for _, row := range rawResults {
@@ -95,10 +99,12 @@ func (f *FarmRepository) parseRawFarmResults(rawResults []farmWithCropProduction
 	for _, farm := range farmsMap {
 		domainFarms = append(domainFarms, farm)
 	}
+	f.logger.Info(ctx, "Raw farm records parsed successfully")
 	return domainFarms
 }
 
 func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
+	f.logger.Info(ctx, "Querying farms")
 	var farmIDs []string
 	var rawResults []farmWithCropProduction
 	var totalCount int64
@@ -116,13 +122,11 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 	} else if searchParameters.MaximumLandArea != nil {
 		baseQuery = baseQuery.Where("farms.land_area <= ?", *searchParameters.MaximumLandArea)
 	}
-
-	// Count distinct farms
+	f.logger.Info(ctx, "Counting farms")
 	if err := baseQuery.Distinct("farms.id").Count(&totalCount).Error; err != nil {
 		return nil, err
 	}
 
-	// Calculate pagination
 	offset := (searchParameters.Page - 1) * searchParameters.PerPage
 	if searchParameters.Page < 1 {
 		offset = 0
@@ -130,7 +134,7 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 	if searchParameters.PerPage < 1 {
 		searchParameters.PerPage = 10
 	}
-
+	f.logger.Info(ctx, "Retrieving farmIds that match the query inputs")
 	if err := baseQuery.
 		Select("farms.id").
 		Group("farms.id").
@@ -139,8 +143,7 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 		Pluck("farms.id", &farmIDs).Error; err != nil {
 		return nil, err
 	}
-
-	// Fetch full details for the selected farm IDs
+	f.logger.Info(ctx, "Retrieving related farms and crop productions")
 	if err := f.db.Model(&entities.Farm{}).
 		Joins("JOIN crop_productions ON crop_productions.farm_id = farms.id").
 		Where("farms.id IN ?", farmIDs).
@@ -151,7 +154,7 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 	}
 
 	// Parse results and create the response
-	domainFarms := f.parseRawFarmResults(rawResults)
+	domainFarms := f.parseRawFarmResults(ctx, rawResults)
 	response := &models.PaginatedResponse[*domain.Farm]{
 		Items:       domainFarms,
 		TotalCount:  totalCount,
@@ -163,6 +166,7 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 }
 
 func (f *FarmRepository) DeleteFarm(ctx context.Context, farmId string) error {
+	f.logger.Info(ctx, "Deleting farm", map[string]interface{}{"farmId": farmId})
 	tx := f.db.Delete(&entities.Farm{}, "id = ?", farmId)
 	if tx.Error != nil {
 		return tx.Error
@@ -174,6 +178,6 @@ func (f *FarmRepository) DeleteFarm(ctx context.Context, farmId string) error {
 			ID:       farmId,
 		}
 	}
-
+	f.logger.Info(ctx, "Farm delete successfully", map[string]interface{}{"farmId": farmId})
 	return nil
 }

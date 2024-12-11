@@ -17,6 +17,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 
+	logger "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -68,7 +69,7 @@ func (is *IntegrationTestsSuite) SetupSuite() {
 
 	is.postgresContainer = postgresContainer
 	db := database.NewPostgresDatabase(connectionString)
-	repo := repositories.NewFarmRepository(db)
+	repo := repositories.NewFarmRepository(db, logger.NewLogger())
 	is.repo = repo
 
 }

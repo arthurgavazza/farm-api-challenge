@@ -13,6 +13,7 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/dto"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/models"
 	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
+	logger "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/logger"
 	"github.com/arthurgavazza/farm-api-challenge/testutils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -50,6 +51,11 @@ func (m *MockDeleteFarmUseCase) Execute(ctx context.Context, farmId string) erro
 
 type FarmControllerTestSuite struct {
 	suite.Suite
+	logger *logger.Logger
+}
+
+func (cs *FarmControllerTestSuite) SetupSuite() {
+	cs.logger = logger.NewLogger()
 }
 
 func (cs *FarmControllerTestSuite) TestFarmControllerCreateFarm() {
@@ -125,7 +131,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerCreateFarm() {
 					Return(tt.mockResponse, tt.mockError)
 			}
 
-			controller := NewFarmController(mockUseCase, nil, nil)
+			controller := NewFarmController(mockUseCase, nil, nil, cs.logger)
 			app := fiber.New(fiber.Config{
 				AppName:       "farm-api-test by @arthurgavazza",
 				CaseSensitive: true,
@@ -223,7 +229,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerListFarms() {
 					Return(tt.mockResponse, tt.mockError)
 			}
 
-			controller := NewFarmController(nil, mockUseCase, nil)
+			controller := NewFarmController(nil, mockUseCase, nil, cs.logger)
 			app := fiber.New(fiber.Config{
 				AppName:       "farm-api-test by @arthurgavazza",
 				CaseSensitive: true,
@@ -299,7 +305,7 @@ func (cs *FarmControllerTestSuite) TestFarmControllerDeleteFarm() {
 					Return(tt.mockError)
 			}
 
-			controller := NewFarmController(nil, nil, mockUseCase)
+			controller := NewFarmController(nil, nil, mockUseCase, cs.logger)
 			app := fiber.New(fiber.Config{
 				AppName:       "farm-api-test by @arthurgavazza",
 				CaseSensitive: true,

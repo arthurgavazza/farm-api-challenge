@@ -34,7 +34,7 @@ func NewPostgresDatabase(connectionString string) *gorm.DB {
 	once.Do(func() {
 		var err error
 		db, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
+			Logger: logger.Default.LogMode(logger.Error),
 		})
 		if err != nil {
 			log.Fatalln("Failed to connect to database:", err)

@@ -10,6 +10,7 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain/usecases"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/dto"
 	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
+	logger "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/logger"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,6 +18,7 @@ type FarmController struct {
 	createFarmUsecase usecases.CreateFarmUseCase
 	listFarmsUseCase  usecases.ListFarmsUseCase
 	deleteFarmUseCase usecases.DeleteFarmUseCase
+	logger            *logger.Logger
 }
 
 // FarmController handles the operations related to farms
@@ -64,6 +66,7 @@ func (fc *FarmController) CreateFarm(c *fiber.Ctx) error {
 		CropProductions: productions,
 	})
 	if err != nil {
+		fc.logger.Error(c.Context(), "Unexpected error", err)
 		return c.
 			Status(fiber.StatusInternalServerError).
 			JSON(shared.CustomError{Error: "internal server error"})
@@ -117,6 +120,7 @@ func (fc *FarmController) ListFarms(c *fiber.Ctx) error {
 
 	result, err := fc.listFarmsUseCase.Execute(c.Context(), searchParameters)
 	if err != nil {
+		fc.logger.Error(c.Context(), "Unexpected error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(shared.CustomError{
 			Error: "Internal server error",
 		})
@@ -139,6 +143,7 @@ func (fc *FarmController) DeleteFarm(c *fiber.Ctx) error {
 				Error: err.Error(),
 			})
 		}
+		fc.logger.Error(c.Context(), "Unexpected error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(shared.CustomError{
 			Error: fmt.Sprintf("Failed to delete farm: %s", err.Error()),
 		})
@@ -162,10 +167,12 @@ func NewFarmController(
 	createFarmUsecase usecases.CreateFarmUseCase,
 	listFarmsUsecase usecases.ListFarmsUseCase,
 	deleteFarmUseCase usecases.DeleteFarmUseCase,
+	logger *logger.Logger,
 ) *FarmController {
 	return &FarmController{
 		createFarmUsecase: createFarmUsecase,
 		listFarmsUseCase:  listFarmsUsecase,
 		deleteFarmUseCase: deleteFarmUseCase,
+		logger:            logger,
 	}
 }

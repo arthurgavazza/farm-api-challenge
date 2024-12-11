@@ -10,6 +10,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/domain"
 	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/errors"
+	logger "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/logger"
 	"github.com/arthurgavazza/farm-api-challenge/testutils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -45,8 +46,8 @@ func (rs *FarmRepositoryTestSuite) SetupSuite() {
 
 	rs.DB, err = gorm.Open(dialector, &gorm.Config{})
 	assert.NoError(rs.T(), err)
-
-	rs.repo = NewFarmRepository(rs.DB)
+	logger := logger.NewLogger()
+	rs.repo = NewFarmRepository(rs.DB, logger)
 	assert.IsType(rs.T(), &FarmRepository{}, rs.repo)
 	farmId := uuid.New()
 	coffeeCrop, err := domain.NewCropProduction(uuid.New(), farmId, domain.CropTypeCoffee, true, true)

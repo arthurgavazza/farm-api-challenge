@@ -7,6 +7,7 @@ import (
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/httpapi"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/httpapi/controllers"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/httpapi/routers"
+	shared "github.com/arthurgavazza/farm-api-challenge/internal/app/shared/logger"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -35,6 +36,7 @@ func main() {
 		log.Warn("Coudn't load .env file")
 	}
 	app := fx.New(
+		shared.Module,
 		config.Module,
 		controllers.Module,
 		usecases.Module,

@@ -14,6 +14,19 @@ import (
 	"go.uber.org/fx"
 )
 
+// @title           Swagger Farms API
+// @version         1.0
+// @description     This is a farms API
+// @termsOfService  http://swagger.io/terms/
+// @contact.name    API Support
+// @contact.url     http://www.swagger.io/support
+// @contact.email   support@swagger.io
+// @license.name    Apache 2.0
+// @license.url     http://www.apache.org/licenses/LICENSE-2.0.html
+// @host      localhost:8080
+// @BasePath  /
+// @externalDocs.description  OpenAPI
+// @externalDocs.url  https://swagger.io/specification/         https://swagger.io/resources/open-api/
 func main() {
 	uuid.EnableRandPool()
 

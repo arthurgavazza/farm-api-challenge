@@ -1,0 +1,205 @@
+basePath: /
+definitions:
+  domain.CropProduction:
+    properties:
+      crop_type:
+        type: string
+      farm_id:
+        type: string
+      id:
+        type: string
+      is_insured:
+        type: boolean
+      is_irrigated:
+        type: boolean
+    type: object
+  domain.Farm:
+    properties:
+      address:
+        type: string
+      created_at:
+        type: string
+      crop_productions:
+        items:
+          $ref: '#/definitions/domain.CropProduction'
+        type: array
+      deleted_at:
+        type: string
+      id:
+        type: string
+      land_area:
+        type: number
+      name:
+        type: string
+      unit_measure:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.CreateFarmDTO:
+    properties:
+      address:
+        type: string
+      crop_productions:
+        items:
+          $ref: '#/definitions/dto.CropProductionDTO'
+        type: array
+      land_area:
+        type: number
+      name:
+        type: string
+      unit_measure:
+        type: string
+    required:
+    - address
+    - land_area
+    - name
+    - unit_measure
+    type: object
+  dto.CropProductionDTO:
+    properties:
+      crop_type:
+        enum:
+        - RICE
+        - CORN
+        - COFFEE
+        - SOYBEANS
+        type: string
+      is_insured:
+        type: boolean
+      is_irrigated:
+        type: boolean
+    required:
+    - crop_type
+    type: object
+  shared.CustomError:
+    properties:
+      error:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/specification/         https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a farms API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Farms API
+  version: "1.0"
+paths:
+  /farms:
+    get:
+      consumes:
+      - application/json
+      description: Get all farms with optional filters (e.g., crop type, land area)
+      parameters:
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Crop Type Filter
+        in: query
+        name: crop_type
+        type: string
+      - description: Minimum Land Area
+        in: query
+        name: minimum_land_area
+        type: number
+      - description: Maximum Land Area
+        in: query
+        name: maximum_land_area
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of Farms
+          schema:
+            items:
+              $ref: '#/definitions/domain.Farm'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+      summary: List all farms
+      tags:
+      - Farm
+    post:
+      consumes:
+      - application/json
+      description: Create a new farm with crop production details
+      parameters:
+      - description: Farm Data
+        in: body
+        name: farm
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateFarmDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Farm Created
+          schema:
+            $ref: '#/definitions/domain.Farm'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+      summary: Create a new farm
+      tags:
+      - Farm
+  /farms/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a farm by its unique ID
+      parameters:
+      - description: Farm ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/shared.CustomError'
+      summary: Delete a farm by ID
+      tags:
+      - Farm
+swagger: "2.0"

@@ -10,3 +10,7 @@ type NotFoundError struct {
 func (e *NotFoundError) Error() string {
 	return fmt.Sprintf("%s with ID %s not found", e.Resource, e.ID)
 }
+
+type CustomError struct {
+	Error string `json:"error"`
+}

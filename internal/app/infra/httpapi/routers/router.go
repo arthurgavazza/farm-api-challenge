@@ -1,8 +1,10 @@
 package routers
 
 import (
+	_ "github.com/arthurgavazza/farm-api-challenge/docs"
 	"github.com/arthurgavazza/farm-api-challenge/internal/app/infra/config"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 )
 
 type Router interface {
@@ -19,7 +21,7 @@ func MakeRouter(
 	}
 
 	r := fiber.New(cfg)
-
+	r.Get("/swagger/*", swagger.HandlerDefault) // default
 	r.Get("/healthcheck", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"status":  "healthy",

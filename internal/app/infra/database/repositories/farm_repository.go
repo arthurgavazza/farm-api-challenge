@@ -99,27 +99,30 @@ func (f *FarmRepository) parseRawFarmResults(rawResults []farmWithCropProduction
 }
 
 func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain.FarmSearchParameters) (*models.PaginatedResponse[*domain.Farm], error) {
+	var farmIDs []string
 	var rawResults []farmWithCropProduction
 	var totalCount int64
 
-	query := f.db.Model(&entities.Farm{}).Joins("JOIN crop_productions ON crop_productions.farm_id = farms.id")
+	baseQuery := f.db.Model(&entities.Farm{}).Joins("JOIN crop_productions ON crop_productions.farm_id = farms.id")
 
 	if searchParameters.CropType != nil {
-		query = query.Where("crop_productions.crop_type = ?", *searchParameters.CropType)
+		baseQuery = baseQuery.Where("crop_productions.crop_type = ?", *searchParameters.CropType)
 	}
 
 	if searchParameters.MinimumLandArea != nil && searchParameters.MaximumLandArea != nil {
-		query = query.Where("farms.land_area BETWEEN ? AND ?", *searchParameters.MinimumLandArea, *searchParameters.MaximumLandArea)
+		baseQuery = baseQuery.Where("farms.land_area BETWEEN ? AND ?", *searchParameters.MinimumLandArea, *searchParameters.MaximumLandArea)
 	} else if searchParameters.MinimumLandArea != nil {
-		query = query.Where("farms.land_area >= ?", *searchParameters.MinimumLandArea)
+		baseQuery = baseQuery.Where("farms.land_area >= ?", *searchParameters.MinimumLandArea)
 	} else if searchParameters.MaximumLandArea != nil {
-		query = query.Where("farms.land_area <= ?", *searchParameters.MaximumLandArea)
+		baseQuery = baseQuery.Where("farms.land_area <= ?", *searchParameters.MaximumLandArea)
 	}
 
-	if err := query.Distinct("farms.id").Count(&totalCount).Error; err != nil {
+	// Count distinct farms
+	if err := baseQuery.Distinct("farms.id").Count(&totalCount).Error; err != nil {
 		return nil, err
 	}
 
+	// Calculate pagination
 	offset := (searchParameters.Page - 1) * searchParameters.PerPage
 	if searchParameters.Page < 1 {
 		offset = 0
@@ -127,14 +130,27 @@ func (f *FarmRepository) ListFarms(ctx context.Context, searchParameters *domain
 	if searchParameters.PerPage < 1 {
 		searchParameters.PerPage = 10
 	}
-	queryFields := `farms.id AS farm_id, farms.name, farms.land_area, farms.unit_measure, farms.address, farms.created_at, farms.updated_at, farms.deleted_at,
-        crop_productions.id AS crop_production_id, crop_productions.farm_id AS crop_production_farm_id, crop_productions.crop_type, crop_productions.is_irrigated, crop_productions.is_insured`
 
-	if err := query.Select(queryFields).
-		Offset(offset).Limit(searchParameters.PerPage).Find(&rawResults).Error; err != nil {
+	if err := baseQuery.
+		Select("farms.id").
+		Group("farms.id").
+		Offset(offset).
+		Limit(searchParameters.PerPage).
+		Pluck("farms.id", &farmIDs).Error; err != nil {
 		return nil, err
 	}
 
+	// Fetch full details for the selected farm IDs
+	if err := f.db.Model(&entities.Farm{}).
+		Joins("JOIN crop_productions ON crop_productions.farm_id = farms.id").
+		Where("farms.id IN ?", farmIDs).
+		Select(`farms.id AS farm_id, farms.name, farms.land_area, farms.unit_measure, farms.address, farms.created_at, farms.updated_at, farms.deleted_at,
+                crop_productions.id AS crop_production_id, crop_productions.farm_id AS crop_production_farm_id, crop_productions.crop_type, crop_productions.is_irrigated, crop_productions.is_insured`).
+		Find(&rawResults).Error; err != nil {
+		return nil, err
+	}
+
+	// Parse results and create the response
 	domainFarms := f.parseRawFarmResults(rawResults)
 	response := &models.PaginatedResponse[*domain.Farm]{
 		Items:       domainFarms,

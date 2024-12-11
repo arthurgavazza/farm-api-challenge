@@ -17,20 +17,23 @@ var (
 	once sync.Once
 )
 
-// NewPostgresDatabase initializes a new GORM database connection.
-func NewPostgresDatabase(config *config.Config) *gorm.DB {
-	once.Do(func() {
-		dsn := fmt.Sprintf(
-			"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-			config.Database.Host,
-			config.Database.User,
-			config.Database.Password,
-			config.Database.Name,
-			config.Database.Port,
-		)
+func generateConnectionString(config *config.Config) string {
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		config.Database.Host,
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Name,
+		config.Database.Port,
+	)
+	return dsn
 
+}
+
+func NewPostgresDatabase(connectionString string) *gorm.DB {
+	once.Do(func() {
 		var err error
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		db, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),
 		})
 		if err != nil {

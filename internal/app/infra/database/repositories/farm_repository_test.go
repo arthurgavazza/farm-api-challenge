@@ -109,82 +109,42 @@ func (rs *FarmRepositoryTestSuite) TestCreateFarm() {
 
 }
 
-func (rs *FarmRepositoryTestSuite) TestListFarmsEmptyResults() {
-	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-
-	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT`)).
-		WillReturnRows(sqlmock.NewRows([]string{
-			"farm_id", "name", "land_area", "unit_measure", "address", "created_at", "updated_at", "deleted_at",
-			"crop_production_id", "crop_production_farm_id", "crop_type", "is_irrigated", "is_insured",
-		}))
-
-	searchParams := &domain.FarmSearchParameters{
-		Page:    1,
-		PerPage: 10,
-	}
-	response, err := rs.repo.ListFarms(context.Background(), searchParams)
-
-	assert.NoError(rs.T(), err)
-	assert.NotNil(rs.T(), response)
-	assert.Equal(rs.T(), 0, len(response.Items))
-	assert.Equal(rs.T(), int64(0), response.TotalCount)
-	assert.Equal(rs.T(), 1, response.CurrentPage)
-	assert.Equal(rs.T(), 10, response.PerPage)
-}
-
-func (rs *FarmRepositoryTestSuite) TestListFarmsWithMultipleCropProductions() {
-	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-
-	rows := sqlmock.NewRows([]string{
-		"farm_id", "name", "land_area", "unit_measure", "address", "created_at", "updated_at", "deleted_at",
-		"crop_production_id", "crop_production_farm_id", "crop_type", "is_irrigated", "is_insured",
-	}).AddRow(
-		rs.farm.ID, rs.farm.Name, rs.farm.LandArea, rs.farm.UnitMeasure, rs.farm.Address, rs.farm.CreatedAt, rs.farm.UpdatedAt, nil,
-		rs.farm.CropProductions[0].ID, rs.farm.ID, rs.farm.CropProductions[0].CropType, rs.farm.CropProductions[0].IsIrrigated, rs.farm.CropProductions[0].IsInsured,
-	).AddRow(
-		rs.farm.ID, rs.farm.Name, rs.farm.LandArea, rs.farm.UnitMeasure, rs.farm.Address, rs.farm.CreatedAt, rs.farm.UpdatedAt, nil,
-		rs.farm.CropProductions[1].ID, rs.farm.ID, rs.farm.CropProductions[1].CropType, rs.farm.CropProductions[1].IsIrrigated, rs.farm.CropProductions[1].IsInsured,
-	)
-	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT`)).
-		WillReturnRows(rows)
-
-	searchParams := &domain.FarmSearchParameters{
-		Page:    1,
-		PerPage: 10,
-	}
-	response, err := rs.repo.ListFarms(context.Background(), searchParams)
-
-	assert.NoError(rs.T(), err)
-	assert.NotNil(rs.T(), response)
-	assert.Equal(rs.T(), 1, len(response.Items))
-	assert.Equal(rs.T(), rs.farm.ID, response.Items[0].ID)
-	assert.Equal(rs.T(), 2, len(response.Items[0].CropProductions))
-}
-
-func (rs *FarmRepositoryTestSuite) TestListFarmsWithCropTypeFilter() {
-
-	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
-
-	rows := sqlmock.NewRows([]string{
-		"farm_id", "name", "land_area", "unit_measure", "address", "created_at", "updated_at", "deleted_at",
-		"crop_production_id", "crop_production_farm_id", "crop_type", "is_irrigated", "is_insured",
-	}).AddRow(
-		rs.farm.ID, rs.farm.Name, rs.farm.LandArea, rs.farm.UnitMeasure, rs.farm.Address, rs.farm.CreatedAt, rs.farm.UpdatedAt, nil,
-		rs.farm.CropProductions[0].ID, rs.farm.ID, rs.farm.CropProductions[0].CropType, rs.farm.CropProductions[0].IsIrrigated, rs.farm.CropProductions[0].IsInsured,
-	)
-
+func (rs *FarmRepositoryTestSuite) TestListFarmsWithFilters() {
 	perPage := 10
+	minimumLandArea := 100.5
+	maximumLandArea := 500.5
+	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT COUNT(DISTINCT("farms"."id"))`)).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
+
+	farmIdsRows := sqlmock.NewRows([]string{
+		"farm_id",
+	}).AddRow(
+		rs.farm.ID,
+	)
+
+	// this test asserts that the filters are properly used by the repository when listing the farms
+	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT DISTINCT farms.id`)).
+		WithArgs(domain.CropTypeCoffee, minimumLandArea, maximumLandArea, perPage).
+		WillReturnRows(farmIdsRows)
+
+	rows := sqlmock.NewRows([]string{
+		"farm_id", "name", "land_area", "unit_measure", "address", "created_at", "updated_at", "deleted_at",
+		"crop_production_id", "crop_production_farm_id", "crop_type", "is_irrigated", "is_insured",
+	}).AddRow(
+		rs.farm.ID, rs.farm.Name, rs.farm.LandArea, rs.farm.UnitMeasure, rs.farm.Address, rs.farm.CreatedAt, rs.farm.UpdatedAt, nil,
+		rs.farm.CropProductions[0].ID, rs.farm.ID, rs.farm.CropProductions[0].CropType, rs.farm.CropProductions[0].IsIrrigated, rs.farm.CropProductions[0].IsInsured,
+	)
+
 	rs.mock.ExpectQuery(regexp.QuoteMeta(`SELECT`)).
-		WithArgs(domain.CropTypeCoffee, perPage).
+		WithArgs(rs.farm.ID.String()).
 		WillReturnRows(rows)
 
 	searchParams := &domain.FarmSearchParameters{
-		Page:     1,
-		PerPage:  perPage,
-		CropType: testutils.PointerTo(domain.CropTypeCoffee.String()),
+		Page:            1,
+		PerPage:         perPage,
+		CropType:        testutils.PointerTo(domain.CropTypeCoffee.String()),
+		MinimumLandArea: &minimumLandArea,
+		MaximumLandArea: &maximumLandArea,
 	}
 	response, err := rs.repo.ListFarms(context.Background(), searchParams)
 

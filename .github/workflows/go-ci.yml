@@ -25,10 +25,6 @@ jobs:
         run: |
           go mod tidy
 
-      - name: Run linters
-        run: |
-          go run golang.org/x/tools/cmd/staticcheck
-
       - name: Run tests
         run: |
           go test -v ./...

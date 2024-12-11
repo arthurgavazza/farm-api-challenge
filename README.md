@@ -12,11 +12,24 @@ This repository contains a solution to the backend developer challenge. The proj
 
 ## Technologies Used
 
-- **Programming Language**: Golang
-- **Frameworks/Libraries**: [Mention relevant libraries]
-- **Database**: PostgreSQL
-- **Containerization**: Docker
-- **Testing Tools**: [e.g., Go testing, Jest, pytest, etc.]
+### **Programming Language**: Golang
+
+### **Frameworks/Libraries**:
+- **Fiber**: A fast web framework for building APIs.
+- **Fx**: A dependency injection framework to manage services and their lifecycle.
+- **Gorm**: ORM for interacting with the PostgreSQL database.
+
+### **Database**: PostgreSQL
+- PostgreSQL is used for data storage and management of farm and crop records.
+
+### **Containerization**: Docker
+- Docker is used to containerize both the application and database, ensuring consistency across environments.
+
+### **Testing Tools**:
+- **testcontainers-go**: Spins up containerized dependencies for integration tests.
+- **go-sqlmock**: Mocks database interactions for unit testing.
+- **testify**: Provides testing utilities like assertions and test suites.
+
 
 ## Project Structure
 ```
@@ -29,6 +42,8 @@ This repository contains a solution to the backend developer challenge. The proj
 ├── docker-compose.yml
 ├── go.mod
 ├── go.sum
+├── integration_tests
+│   └── farm_repository_integration_test.go
 ├── internal
 │   └── app
 │       ├── domain
@@ -61,16 +76,16 @@ This repository contains a solution to the backend developer challenge. The proj
 │       │   │       ├── farm_repository_test.go
 │       │   │       └── module.go
 │       │   └── httpapi
-│       │       ├── controllers 
+│       │       ├── controllers
 │       │       │   ├── farm_controller.go
 │       │       │   ├── farm_controller_test.go
 │       │       │   └── module.go
 │       │       ├── module.go
-│       │       ├── routers     
+│       │       ├── routers
 │       │       │   ├── farm.go
 │       │       │   ├── module.go
 │       │       │   └── router.go
-│       │       └── server.go    
+│       │       └── server.go
 │       ├── models
 │       │   └── models.go
 │       └── shared
@@ -226,11 +241,10 @@ The API includes the following endpoints:
     ],
     "total_count": 4,
     "current_page": 1,
-    "per_page": 2
+    "per_page": 1
 }
-  ```
 
-## Setup Instructions
+## Local Development Setup Instructions 
 
 ### Prerequisites
 
@@ -239,25 +253,74 @@ The API includes the following endpoints:
 
 ### Installation Steps
 
-1. Clone the repository:
+1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
-   cd <repository-name>
+   git clone https://github.com/arthurgavazza/farm-api-challenge.git
+   cd farm-api-challenge
    ```
-2. Install dependencies:
+
+2. **Install dependencies**:
    ```bash
-   [Insert command to install dependencies, e.g., `go mod tidy`]
+   go mod tidy
    ```
-3. Set up the environment variables:
+
+3. **Set up the environment variables**:
    - Copy `.env.example` to `.env` and configure the values.
      ```bash
      cp .env.example .env
      ```
-4. Run the application:
+
+4. **Choose a setup option**:  
+   Depending on your use case, follow one of the approaches below:
+
+---
+
+### Option 1: **Run Locally with `docker-compose.local.yml` (Best for Development)**  
+This option is ideal when you are actively developing and testing the Go application. It starts only the database container while you run the API locally, allowing for faster iterations without rebuilding the API container.  
+
+**Steps**:  
+1. Start the local database container:  
    ```bash
-   [Insert command to start the server, e.g., `go run main.go`]
+   docker compose -f docker-compose.local.yml up --build -d
    ```
-5. Access the API at `http://localhost:PORT`.
+2. Run the Go API locally:  
+   ```bash
+   go run cmd/main.go
+   ```
+3. Access the API at `http://localhost:PORT` (default: `http://localhost:8080`).
+
+---
+
+### Option 2: **Run with `docker-compose.dev.yml` (Build API Locally)**  
+This option is suitable when you want to test changes with the API running inside a container. It builds the API image from your local source code and runs the entire stack (API and database).  
+
+**Steps**:  
+1. Start the stack (API and database):  
+   ```bash
+   docker compose -f docker-compose.dev.yml up --build
+   ```
+2. Access the API at `http://localhost:PORT` (default: `http://localhost:8080`).
+
+---
+
+### Option 3: **Run with `docker-compose.yml` (Using Prebuilt DockerHub Image)**  
+This option is best if you want to run the current stable version of the API using the prebuilt image from DockerHub. It doesn’t require building the API locally.  
+
+**Steps**:  
+1. Start the stack (API and database):  
+   ```bash
+   docker compose up -d
+   ```
+2. Access the API at `http://localhost:PORT` (default: `http://localhost:8080`).
+
+---
+
+### Summary of Use Cases  
+| Option                      | When to Use                                                                                  |
+|-----------------------------|----------------------------------------------------------------------------------------------|
+| **Option 1: Local**         | Actively developing and want faster feedback without rebuilding the API container.           |
+| **Option 2: Dev**           | Testing API changes within a container built from your local source code.                   |
+| **Option 3: Prebuilt Image**| Running the current stable version of the API without modifying the source code.             |
 
 ### Testing
 

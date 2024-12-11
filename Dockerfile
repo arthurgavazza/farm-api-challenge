@@ -14,7 +14,7 @@ COPY . .
 
 ARG TARGETARCH
 # Build the Go application for Linux
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=$"TARGETARCH" go build -o main ./cmd/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=$TARGETARCH go build -o main ./cmd/main.go
 
 # Stage 2: Create a lightweight image
 FROM alpine:latest

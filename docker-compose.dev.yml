@@ -15,8 +15,8 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 15s
       timeout: 25s
-api:
-    image: arthurgavazza/farm-api-challenge
+ api:
+    build: .
     depends_on:
       db:
         condition: service_healthy

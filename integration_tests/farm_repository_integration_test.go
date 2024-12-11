@@ -49,7 +49,7 @@ func (is *IntegrationTestsSuite) SetupSuite() {
 	ctx := context.Background()
 	configuration := config.NewConfig()
 	postgresContainer, err := postgres.Run(ctx,
-		"postgres:16-alpine",
+		"postgres:17-alpine",
 		postgres.WithDatabase(configuration.Database.Name),
 		postgres.WithUsername(configuration.Database.User),
 		postgres.WithPassword(configuration.Database.Password),

@@ -139,6 +139,7 @@ Implements infrastructure concerns such as configuration, database interactions,
   - Includes mappers for converting between database models and domain models.  
   - Contains repository implementations.  
 - **`httpapi`**:  
+  - **Middlewares**: Common middlewares used across multiple endpoints (e.g. `request_logging_middleware.go`).  
   - **Controllers**: API route handlers (e.g., `farm_controller.go`).  
   - **Routers**: Defines API routes and sets up routing logic.  
   - **Server**: Handles HTTP server setup.
